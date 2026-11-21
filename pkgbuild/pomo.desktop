@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Pomo
+Name[da]=Pomo
+Comment=Pomodoro timer
+Comment[da]=Pomodoro-timer
+Exec=pomo
+Icon=pomo
+Terminal=false
+Categories=Utility;
+StartupWMClass=pomo

@@ -1,0 +1,15 @@
+{
+  "Focus": "Fokus",
+  "Short break": "Kort pause",
+  "Long break": "Lang pause",
+  "Start": "Start",
+  "Pause": "Pause",
+  "Reset": "Nulstil",
+  "Skip": "Spring over",
+  "Start or pause": "Start eller pause",
+  "Reset the timer": "Nulstil timeren",
+  "Skip to the next phase": "Spring til næste fase",
+  "Show or hide this help": "Vis eller skjul hjælp",
+  "Quit": "Afslut",
+  "%n focus sessions done": { "one": "%n fokussession færdig", "other": "%n fokussessioner færdige" }
+}
