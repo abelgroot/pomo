@@ -11,6 +11,7 @@ language, and sends a desktop notification when a phase ends.
 | Space | Start or pause        |
 | R     | Reset the timer       |
 | S     | Skip to next phase    |
+| ,     | Settings (durations)  |
 | ?     | Show shortcuts        |
 | Q     | Quit                  |
 

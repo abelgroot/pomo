@@ -13,7 +13,8 @@ class PomoTests : public QObject {
 private slots:
     void startsInFocusAndPauses()
     {
-        Backend backend;
+        QTemporaryDir settings;
+        Backend backend(settings.filePath("pomo.ini"));
         QCOMPARE(backend.phase(), int(Backend::Focus));
         QCOMPARE(backend.remaining(), 25 * 60);
         backend.primaryAction();
@@ -24,7 +25,8 @@ private slots:
 
     void finishingFocusCountsAndStartsBreak()
     {
-        Backend backend;
+        QTemporaryDir settings;
+        Backend backend(settings.filePath("pomo.ini"));
         backend.setDurations(1, 1, 1);
         backend.primaryAction();
         QTRY_COMPARE_WITH_TIMEOUT(backend.completed(), 1, 3000);
@@ -34,7 +36,8 @@ private slots:
 
     void skippingFocusDoesNotCount()
     {
-        Backend backend;
+        QTemporaryDir settings;
+        Backend backend(settings.filePath("pomo.ini"));
         backend.skip();
         QCOMPARE(backend.phase(), int(Backend::ShortBreak));
         QCOMPARE(backend.completed(), 0);
@@ -42,9 +45,36 @@ private slots:
         QCOMPARE(backend.phase(), int(Backend::Focus));
     }
 
+    void durationsPersistAndApplyWhenUntouched()
+    {
+        QTemporaryDir dir;
+        const QString file = dir.filePath("pomo.ini");
+        {
+            Backend backend(file);
+            backend.setFocusMinutes(50);
+            QCOMPARE(backend.remaining(), 50 * 60);
+            backend.setFocusMinutes(500);
+            QCOMPARE(backend.focusMinutes(), 180);
+        }
+        Backend again(file);
+        QCOMPARE(again.focusMinutes(), 180);
+        QCOMPARE(again.shortBreakMinutes(), 5);
+    }
+
+    void changingDurationKeepsProgress()
+    {
+        QTemporaryDir dir;
+        Backend backend(dir.filePath("pomo.ini"));
+        backend.primaryAction();
+        backend.setFocusMinutes(30);
+        QVERIFY(backend.running());
+        QVERIFY(backend.remaining() <= 25 * 60);
+    }
+
     void resetRestoresTheDuration()
     {
-        Backend backend;
+        QTemporaryDir settings;
+        Backend backend(settings.filePath("pomo.ini"));
         backend.setDurations(60, 5, 10);
         backend.primaryAction();
         backend.reset();

@@ -11,5 +11,10 @@
   "Skip to the next phase": "Spring til næste fase",
   "Show or hide this help": "Vis eller skjul hjælp",
   "Quit": "Afslut",
-  "%n focus sessions done": { "one": "%n fokussession færdig", "other": "%n fokussessioner færdige" }
+  "%n focus sessions done": { "one": "%n fokussession færdig", "other": "%n fokussessioner færdige" },
+  "Settings": "Indstillinger",
+  "Open settings": "Åbn indstillinger",
+  "Focus (minutes)": "Fokus (minutter)",
+  "Short break (minutes)": "Kort pause (minutter)",
+  "Long break (minutes)": "Lang pause (minutter)"
 }

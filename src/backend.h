@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+#include <QSettings>
 #include <QTimer>
 
 // A pomodoro cycle: focus, short break, and a long break after every fourth
@@ -14,13 +15,17 @@ class Backend : public QObject {
     Q_PROPERTY(bool running READ running NOTIFY runningChanged)
     Q_PROPERTY(int completed READ completed NOTIFY completedChanged)
     Q_PROPERTY(int count READ completed NOTIFY completedChanged)
+    Q_PROPERTY(int focusMinutes READ focusMinutes WRITE setFocusMinutes NOTIFY durationsChanged)
+    Q_PROPERTY(int shortBreakMinutes READ shortBreakMinutes WRITE setShortBreakMinutes NOTIFY durationsChanged)
+    Q_PROPERTY(int longBreakMinutes READ longBreakMinutes WRITE setLongBreakMinutes NOTIFY durationsChanged)
     Q_PROPERTY(QString notifyError READ notifyError NOTIFY notifyErrorChanged)
 
 public:
     enum Phase { Focus, ShortBreak, LongBreak };
     Q_ENUM(Phase)
 
-    explicit Backend(QObject *parent = nullptr);
+    // The settings file is a parameter so tests never touch the user's own.
+    explicit Backend(const QString &settingsFile = {}, QObject *parent = nullptr);
 
     int phase() const { return m_phase; }
     int remaining() const { return m_remaining; }
@@ -29,7 +34,14 @@ public:
     int completed() const { return m_completed; }
     QString notifyError() const { return m_notifyError; }
 
-    // Seconds per phase; tests shrink these.
+    int focusMinutes() const { return m_durations[Focus] / 60; }
+    int shortBreakMinutes() const { return m_durations[ShortBreak] / 60; }
+    int longBreakMinutes() const { return m_durations[LongBreak] / 60; }
+    void setFocusMinutes(int minutes) { setMinutes(Focus, minutes); }
+    void setShortBreakMinutes(int minutes) { setMinutes(ShortBreak, minutes); }
+    void setLongBreakMinutes(int minutes) { setMinutes(LongBreak, minutes); }
+
+    // Seconds per phase, unsaved; tests shrink these.
     void setDurations(int focus, int shortBreak, int longBreak);
 
     Q_INVOKABLE void primaryAction();   // start or pause
@@ -41,10 +53,12 @@ signals:
     void tick();
     void runningChanged();
     void completedChanged();
+    void durationsChanged();
     void notifyErrorChanged();
 
 private:
     int duration(int phase) const;
+    void setMinutes(int phase, int minutes);
     void update();
     void finishPhase();
     void enter(int phase);
@@ -58,4 +72,5 @@ private:
     qint64 m_deadline = 0;
     QTimer m_timer;
     QString m_notifyError;
+    QSettings m_settings;
 };

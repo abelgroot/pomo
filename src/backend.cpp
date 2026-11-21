@@ -4,7 +4,16 @@
 #include <QProcess>
 #include <QStandardPaths>
 
-Backend::Backend(QObject *parent) : QObject(parent) {
+Backend::Backend(const QString &settingsFile, QObject *parent)
+    : QObject(parent),
+      m_settings(settingsFile.isEmpty() ? QSettings("pomo", "pomo").fileName() : settingsFile,
+                 QSettings::IniFormat) {
+    static const char *keys[] = {"focus", "shortBreak", "longBreak"};
+    for (int p = 0; p < 3; ++p) {
+        const int minutes = m_settings.value(keys[p], m_durations[p] / 60).toInt();
+        if (minutes >= 1 && minutes <= 180)
+            m_durations[p] = minutes * 60;
+    }
     m_remaining = m_durations[Focus];
     m_timer.setInterval(250);
     connect(&m_timer, &QTimer::timeout, this, &Backend::update);
@@ -19,6 +28,27 @@ void Backend::setDurations(int focus, int shortBreak, int longBreak) {
     m_remaining = duration(m_phase);
     emit phaseChanged();
     emit tick();
+}
+
+// A running or half-used timer keeps its time; only an untouched one picks up
+// the new length, so editing settings never throws away progress.
+void Backend::setMinutes(int phase, int minutes) {
+    minutes = qBound(1, minutes, 180);
+    if (m_durations[phase] == minutes * 60)
+        return;
+    const bool untouched = !m_running && m_remaining == m_durations[phase];
+    m_durations[phase] = minutes * 60;
+    static const char *keys[] = {"focus", "shortBreak", "longBreak"};
+    m_settings.setValue(keys[phase], minutes);
+    m_settings.sync();
+    emit durationsChanged();
+    if (phase == m_phase) {
+        if (untouched) {
+            m_remaining = m_durations[phase];
+            emit tick();
+        }
+        emit phaseChanged();
+    }
 }
 
 void Backend::primaryAction() {

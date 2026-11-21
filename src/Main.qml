@@ -18,6 +18,7 @@ ApplicationWindow {
     Material.roundedScale: theme.radius
 
     property bool helpVisible: false
+    property bool settingsVisible: false
 
     // Reading translator.language makes these re-render on a language switch.
     function phaseName(p) {
@@ -31,7 +32,8 @@ ApplicationWindow {
     }
 
     Shortcut { sequence: "?"; context: Qt.ApplicationShortcut; onActivated: win.helpVisible = !win.helpVisible }
-    Shortcut { sequence: "Escape"; context: Qt.ApplicationShortcut; onActivated: win.helpVisible = false }
+    Shortcut { sequence: "Escape"; context: Qt.ApplicationShortcut; onActivated: { win.helpVisible = false; win.settingsVisible = false } }
+    Shortcut { sequence: ","; context: Qt.ApplicationShortcut; onActivated: win.settingsVisible = !win.settingsVisible }
     Shortcut { sequence: "Q"; context: Qt.ApplicationShortcut; onActivated: Qt.quit() }
     Shortcut { sequence: "Space"; context: Qt.ApplicationShortcut; onActivated: backend.primaryAction() }
     Shortcut { sequence: "R"; context: Qt.ApplicationShortcut; onActivated: backend.reset() }
@@ -101,6 +103,7 @@ ApplicationWindow {
                 }
                 Button { text: qsTr("Reset"); flat: true; onClicked: backend.reset() }
                 Button { text: qsTr("Skip"); flat: true; onClicked: backend.skip() }
+                Button { text: qsTr("Settings"); flat: true; onClicked: win.settingsVisible = true }
             }
 
             Label {
@@ -137,8 +140,45 @@ ApplicationWindow {
                     Label { text: "Space" }  Label { text: qsTr("Start or pause") }
                     Label { text: "R" }      Label { text: qsTr("Reset the timer") }
                     Label { text: "S" }      Label { text: qsTr("Skip to the next phase") }
+                    Label { text: "," }      Label { text: qsTr("Open settings") }
                     Label { text: "?" }      Label { text: qsTr("Show or hide this help") }
                     Label { text: "Q" }      Label { text: qsTr("Quit") }
+                }
+            }
+        }
+
+        Rectangle {
+            visible: win.settingsVisible
+            anchors.fill: parent
+            color: "#e60e0e10"
+            MouseArea { anchors.fill: parent; onClicked: win.settingsVisible = false }
+            Rectangle {
+                anchors.centerIn: parent
+                width: Math.min(parent.width - 40, 380)
+                height: form.implicitHeight + 40
+                radius: theme.radius
+                color: "#1a1a1e"
+                MouseArea { anchors.fill: parent }
+                GridLayout {
+                    id: form
+                    anchors { fill: parent; margins: 20 }
+                    columns: 2
+                    columnSpacing: 20
+                    Label { text: qsTr("Focus (minutes)"); Layout.fillWidth: true }
+                    SpinBox {
+                        from: 1; to: 180; editable: true; value: backend.focusMinutes
+                        onValueModified: backend.focusMinutes = value
+                    }
+                    Label { text: qsTr("Short break (minutes)"); Layout.fillWidth: true }
+                    SpinBox {
+                        from: 1; to: 180; editable: true; value: backend.shortBreakMinutes
+                        onValueModified: backend.shortBreakMinutes = value
+                    }
+                    Label { text: qsTr("Long break (minutes)"); Layout.fillWidth: true }
+                    SpinBox {
+                        from: 1; to: 180; editable: true; value: backend.longBreakMinutes
+                        onValueModified: backend.longBreakMinutes = value
+                    }
                 }
             }
         }
